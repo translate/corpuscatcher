@@ -247,9 +247,12 @@ def crawl_url(url, browser=None, datadir='data', depth=0, site='', talkative=Fal
         browser = Browser()
         browser.addheaders = (
             ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
-            ('User-agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)')
+            ('User-agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)') # We're Firefox! :P
         )
-        browser.set_handle_robots(False)
+        browser.set_handle_gzip(True)
+        browser.set_handle_redirect(True)
+        browser.set_handle_refresh(False)
+        browser.set_handle_robots(True)
         browser.set_handled_schemes(['http', 'https'])
         browser.set_proxies({})
 
@@ -502,11 +505,25 @@ def create_option_parser():
         default=False
     )
 
+    parser.add_option(
+        '-V', '--version',
+        dest='ver',
+        default=False,
+        action='store_true',
+        help=_('Display version information and exit.')
+    )
+
     return parser
 
 def main():
     """Main entry-point for command-line usage."""
     options, args = create_option_parser().parse_args()
+
+    if options.ver:
+        from __version__ import print_version_info
+        print_version_info('corpus_collect.py')
+        exit(0)
+
     outputdir = options.outputdir
     l = options.tuplelength
     n = options.numelements
