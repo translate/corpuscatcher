@@ -130,10 +130,23 @@ def create_option_parser():
         help=_('Print output as a list of words.')
     )
 
+    parser.add_option(
+        '-V', '--version',
+        dest='ver',
+        default=False,
+        action='store_true',
+        help=_('Display version information and exit.')
+    )
+
     return parser
 
 def main():
     options, args = create_option_parser().parse_args()
+
+    if options.ver:
+        from __version__ import print_version_info
+        print_version_info('clean_corpus.py')
+        exit(0)
 
     files = []
     for f in args:
