@@ -26,7 +26,7 @@ from StringIO import StringIO
 
 MAXCOL = 10000 # The max number of columns for output text
 
-def apply_htmlparser(html, maxcol=MAXCOL):
+def apply_htmlparser(html, maxcol=MAXCOL, codec='utf8'):
     """This function extracts from the HTML string by passing it through a
         htmllib.HTMLParser instance (slightly modified for Unicode support).
 
@@ -36,8 +36,10 @@ def apply_htmlparser(html, maxcol=MAXCOL):
         @param html: The HTML to extract text from (eg. u"<html><body><h1>Hello</h1>...")
         @type  maxcol: int
         @param maxcol: The maxcol value to passed to formatter.DumbWriter()
+        @type  codec: str (passed to codecs.lookup())
+        @param codec: The codec to use to parse the HTML.
 
-        @rtype : str (utf-8)
+        @rtype : str
         @return: The text parsed from the HTML."""
 
     class UnicodeHTMLParser(htmllib.HTMLParser):
@@ -61,23 +63,23 @@ def apply_htmlparser(html, maxcol=MAXCOL):
                 self.handle_data(unichr(n))
 
     sio = StringIO()
-    encoder, decoder, reader, writer = codecs.lookup('utf8')
-    utf8io = codecs.StreamReaderWriter(sio, reader, writer, 'replace')
-    writer = formatter.DumbWriter(utf8io, maxcol)
+    encoder, decoder, reader, writer = codecs.lookup(codec)
+    codecio = codecs.StreamReaderWriter(sio, reader, writer, 'replace')
+    writer = formatter.DumbWriter(codecio, maxcol)
     prettifier = formatter.AbstractFormatter(writer)
 
     parser = UnicodeHTMLParser(prettifier)
     parser.feed(html)
     parser.close()
 
-    utf8io.seek(0)
-    result = utf8io.read()
+    codecio.seek(0)
+    result = codecio.read()
     sio.close()
-    utf8io.close()
+    codecio.close()
 
     return result
 
-def remove_by_patthern(text, pattern):
+def remove_by_pattern(text, pattern):
     """Removes the given regex (pattern) from text."""
     junkregex = re.compile(pattern)
     return junkregex.sub('', text)
@@ -97,8 +99,23 @@ def html2text(html, rtags=['script', 'style'], maxcol=MAXCOL):
         html = html.read()
 
     html = remove_tags(html, tags=rtags)
-    text = apply_htmlparser(html)
-    text = remove_by_patthern(text, r'\[\d+\]|\(image\)|(\s+)?\-{3,}(\s+)?')
+
+    import encodings
+    try_codecs = ('utf8', 'latin1')
+    text = ''
+    success = False
+    for c in try_codecs:
+        try:
+            text = apply_htmlparser(html, codec=c)
+            success = True
+            break
+        except UnicodeDecodeError:
+            pass
+
+    if not success:
+        raise Exception('Unable to determine file encoding.')
+
+    text = remove_by_pattern(text, r'\[\d+\]|\(image\)|(\s+)?\-{3,}(\s+)?')
 
     return text
 
@@ -107,7 +124,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 2:
         if os.path.exists(sys.argv[1]):
-            f = open(sys.argv[1])
+            f = codecs.open(sys.argv[1], 'r')
         else:
             print 'Usage: %s [<input.html>]'
             exit(1)
