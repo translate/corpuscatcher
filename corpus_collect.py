@@ -215,7 +215,9 @@ def download_urls(urls, outdir=None, crawldepth=0, siteonly=False, talkative=Fal
         if siteonly:
             parts = url.split('/')
             site = '%s//%s' % (parts[0], parts[2])
-        localpages = crawl_url(url, datadir=datadir, depth=crawldepth, site=site, talkative=talkative)
+        pages = crawl_url(url, datadir=datadir, depth=crawldepth, site=site, talkative=talkative)
+        if pages:
+            localpages += pages
 
     return localpages and tuple(localpages) or ()
 
