@@ -114,6 +114,20 @@ def build_random_tuples(seeds, n=3, l=10, outdir=None, talkative=False):
 
     return tuple(searchtuples)
 
+def init_browser():
+    browser = Browser()
+    browser.addheaders = (
+        ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
+        ('User-agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)') # We're Firefox! :P
+    )
+    browser.set_handle_gzip(True)
+    browser.set_handle_redirect(True)
+    browser.set_handle_refresh(False)
+    browser.set_handle_robots(True)
+    browser.set_handled_schemes(['http', 'https'])
+    browser.set_proxies({})
+    return browser
+
 def collect_urls_from_yahoo(searchtuples, count=10, lang='default', appid='00000000'):
     """A (Python) replacement for BootCaT's collect_urls_from_yahoo.pl."""
     from yahoo.search import web
@@ -185,7 +199,7 @@ def get_urls(searchtuples, count=10, engine='yahoo', lang=None, outdir=None, tal
 
     return tuple(urlset)
 
-def download_urls(urls, outdir=None, crawldepth=0, siteonly=False, talkative=False):
+def download_urls(urls, outdir=None, browser=None, crawldepth=0, siteonly=False, talkative=False):
     """Downloads all URLs in urls to outdir/data. Files are renamed to
         _hash_.html where _hash_ is the md5sum of the URL. The original URL is
         saved as an HTML comment in the first line of the downloaded file.
@@ -215,7 +229,7 @@ def download_urls(urls, outdir=None, crawldepth=0, siteonly=False, talkative=Fal
         if siteonly:
             parts = url.split('/')
             site = '%s//%s' % (parts[0], parts[2])
-        pages = crawl_url(url, datadir=datadir, depth=crawldepth, site=site, talkative=talkative)
+        pages = crawl_url(url, browser=browser, datadir=datadir, depth=crawldepth, site=site, talkative=talkative)
         if pages:
             localpages += pages
 
@@ -246,17 +260,7 @@ def crawl_url(url, browser=None, datadir='data', depth=0, site='', talkative=Fal
         return None
 
     if browser is None:
-        browser = Browser()
-        browser.addheaders = (
-            ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
-            ('User-agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)') # We're Firefox! :P
-        )
-        browser.set_handle_gzip(True)
-        browser.set_handle_redirect(True)
-        browser.set_handle_refresh(False)
-        browser.set_handle_robots(True)
-        browser.set_handled_schemes(['http', 'https'])
-        browser.set_proxies({})
+        browser = init_browser()
 
     files = []
 
