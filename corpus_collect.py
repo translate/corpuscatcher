@@ -327,6 +327,9 @@ def convert_pages(localpages, outdir=None, talkative=False):
         @rtype:  tuple
         @return: A tuple of filenames of converted text files.
         """
+    if not localpages:
+        return tuple()
+
     if not outdir or not os.path.isdir(outdir):
         outdir = '.'
 
