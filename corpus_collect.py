@@ -120,7 +120,7 @@ def init_browser():
         ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
         ('User-agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)') # We're Firefox! :P
     )
-    browser.set_handle_gzip(True)
+    # browser.set_handle_gzip(True) # Currently experimental in mechanize
     browser.set_handle_redirect(True)
     browser.set_handle_refresh(False)
     browser.set_handle_robots(True)
