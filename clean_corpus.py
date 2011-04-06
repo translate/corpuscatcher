@@ -79,17 +79,36 @@ def clean_word(word, remove_regex=re.compile(r'[_\d]'), replacement=''):
     """Cleans the word of surrounding puncutation and/or decorations."""
     return remove_regex.sub(word, replacement)
 
+def combine_lines(lines):
+    new_corpus_lines = []
+    block = []
+    pretext = ""
+    posttext = ""
+    for linenum in range(len(lines)):
+        line = lines[linenum].strip()
+        isbreak = not bool(line)
+        if isbreak and block:
+            new_corpus_lines.append(" ".join(block))
+            block = []
+        elif not isbreak:
+            block.append(line)
+    if block:
+        new_corpus_lines.append(" ".join(block))
+    return new_corpus_lines
+
 def process_file(corpus, remove_bad=False, output_list=False):
     """Cleans the corpus file (C{corpus}) via L{clean_file} and joins the
         resulting list of words appropriate according to C{output_list}.
         """
     lines = corpus.readlines()
+    if not output_list:
+        lines = combine_lines(lines)
     words = clean_file(lines, remove_bad=remove_bad, output_list=output_list)
 
     if output_list:
         return list(set(words))
     else:
-        return ['\n'.join([line.strip() for line in words])]
+        return ['\n\n'.join([line.strip() for line in words])]
 
 
 
