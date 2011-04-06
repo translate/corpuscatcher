@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright 2008 Zuza Software Foundation
+# Copyright 2008,2011 Zuza Software Foundation
 #
 # This file is part of CorpusCatcher.
 #
@@ -28,7 +28,7 @@ def line_is_valid(good, bad, unsure):
     """Determine if a line with the given numbers are valid."""
     return bad < good + unsure
 
-def clean_file(corpus, remove_bad=False, dividers_regex=r"[^\w'-]"):
+def clean_file(corpus, remove_bad=False, output_list=True, dividers_regex=r"[^\w'-]"):
     """Clean corpus file by breaking it up into words (according to
         C{dividers_regex}) and testing those words to C{goodfile} and
         C{badfile} if available. L{line_is_valid} then determines if a given
@@ -41,7 +41,7 @@ def clean_file(corpus, remove_bad=False, dividers_regex=r"[^\w'-]"):
     dividers = re.compile(dividers_regex, flags=re.UNICODE)
 
     for line in corpus.xreadlines():
-        cleanline = []
+        cleanwords = []
         linecount += 1
 
         # line represents a paragraph
@@ -58,17 +58,20 @@ def clean_file(corpus, remove_bad=False, dividers_regex=r"[^\w'-]"):
             # Most words should be good, so we test for it first
             if cword.lower() in goodwords:
                 good += 1
-                cleanline.append(word)
+                cleanwords.append(word)
             elif cword.lower() in badwords:
                 bad += 1
                 if not remove_bad:
-                    cleanline.append('__%s__' % (word))
+                    cleanwords.append('__%s__' % (word))
             else:
                 unsure += 1
-                cleanline.append(word)
+                cleanwords.append(word)
 
         if line_is_valid(good, bad, unsure):
-            textlines.append(cleanline)
+            if output_list:
+                textlines.extend(cleanwords)
+            else:
+                textlines.append(line)
 
     return textlines
 
@@ -80,7 +83,7 @@ def process_file(corpus, remove_bad=False, output_list=False):
     """Cleans the corpus file (C{corpus}) via L{clean_file} and joins the
         resulting list of words appropriate according to C{output_list}.
         """
-    words = clean_file(corpus, remove_bad=remove_bad)
+    words = clean_file(corpus, remove_bad=remove_bad, output_list=output_list)
 
     if output_list:
         wordset = set()
@@ -91,7 +94,7 @@ def process_file(corpus, remove_bad=False, output_list=False):
         words = list(wordset)
         return words
     else:
-        return [' '.join(line) for line in words]
+        return ['\n'.join([line.strip() for line in words])]
 
 
 
@@ -172,8 +175,9 @@ def main():
     for f in files:
         allwords.extend( process_file(open(f), remove_bad=options.removebad, output_list=options.list) )
 
-    allwords = list(set(allwords))
-    allwords.sort()
+    if options.list:
+        allwords = list(set(allwords))
+        allwords.sort()
 
     for word in allwords:
         print word
