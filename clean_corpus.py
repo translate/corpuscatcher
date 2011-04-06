@@ -28,7 +28,7 @@ def line_is_valid(good, bad, unsure):
     """Determine if a line with the given numbers are valid."""
     return bad < good + unsure
 
-def clean_file(corpus, remove_bad=False, output_list=True, dividers_regex=r"[^\w'-]"):
+def clean_file(corpus_lines, remove_bad=False, output_list=True, dividers_regex=r"[^\w'-]"):
     """Clean corpus file by breaking it up into words (according to
         C{dividers_regex}) and testing those words to C{goodfile} and
         C{badfile} if available. L{line_is_valid} then determines if a given
@@ -40,7 +40,7 @@ def clean_file(corpus, remove_bad=False, output_list=True, dividers_regex=r"[^\w
     textlines = []
     dividers = re.compile(dividers_regex, flags=re.UNICODE)
 
-    for line in corpus.xreadlines():
+    for line in corpus_lines:
         cleanwords = []
         linecount += 1
 
@@ -83,16 +83,11 @@ def process_file(corpus, remove_bad=False, output_list=False):
     """Cleans the corpus file (C{corpus}) via L{clean_file} and joins the
         resulting list of words appropriate according to C{output_list}.
         """
-    words = clean_file(corpus, remove_bad=remove_bad, output_list=output_list)
+    lines = corpus.readlines()
+    words = clean_file(lines, remove_bad=remove_bad, output_list=output_list)
 
     if output_list:
-        wordset = set()
-        for line in words:
-            for word in line:
-                wordset.add(word)
-
-        words = list(wordset)
-        return words
+        return list(set(words))
     else:
         return ['\n'.join([line.strip() for line in words])]
 
