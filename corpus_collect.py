@@ -351,7 +351,8 @@ def convert_pages(localpages, outdir=None, talkative=False):
 
         # Try and decode 'html'
         foundenc = False
-        for encoding in ('latin-1', 'utf-8'):
+        # TODO: The following should work for some languages, but not for all
+        for encoding in ('utf-8', 'latin-1'):
             try:
                 html = html.decode(encoding)
                 foundenc = True
