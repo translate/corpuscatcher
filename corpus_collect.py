@@ -199,7 +199,7 @@ def get_urls(searchtuples, count=10, engine='yahoo', lang=None, outdir=None, tal
 
     return tuple(urlset)
 
-def download_urls(urls, outdir=None, browser=None, crawldepth=0, siteonly=False, talkative=False):
+def download_urls(urls, outdir=None, browser=None, crawldepth=0, siteonly=False, talkative=False, pattern=''):
     """Downloads all URLs in urls to outdir/data. Files are renamed to
         _hash_.html where _hash_ is the md5sum of the URL. The original URL is
         saved as an HTML comment in the first line of the downloaded file.
@@ -229,7 +229,7 @@ def download_urls(urls, outdir=None, browser=None, crawldepth=0, siteonly=False,
         if siteonly:
             parts = url.split('/')
             site = '%s//%s' % (parts[0], parts[2])
-        pages = crawl_url(url, browser=browser, datadir=datadir, depth=crawldepth, site=site, talkative=talkative)
+        pages = crawl_url(url, browser=browser, datadir=datadir, depth=crawldepth, site=site, talkative=talkative, pattern=pattern)
         if pages:
             localpages += pages
 
@@ -248,7 +248,7 @@ def url_is_text(url):
 
     return response.getheader('content-type').startswith('text/')
 
-def crawl_url(url, browser=None, datadir='data', depth=0, site='', talkative=False):
+def crawl_url(url, browser=None, datadir='data', depth=0, site='', talkative=False, pattern=''):
     """Downloads C{url} to C{datadir} using C{browser} and recurse with all
         links on that page as long as C{depth >= 0} and the link's URL starts
         with C{site}.
@@ -269,7 +269,7 @@ def crawl_url(url, browser=None, datadir='data', depth=0, site='', talkative=Fal
         # The URL was not previously downloaded
         if talkative:
             print _('\t%s => [Previously downloaded]') % (url)
-    elif url_is_text(url):
+    elif url.find(pattern) >= 0 and url_is_text(url):
         html = ''
         try:
             html = filterhtml(browser.open(url).get_data())
@@ -306,7 +306,7 @@ def crawl_url(url, browser=None, datadir='data', depth=0, site='', talkative=Fal
                     else:
                         continue
 
-                downloaded = crawl_url(link.url, browser=browser, datadir=datadir, depth=depth-1, site=site, talkative=talkative)
+                downloaded = crawl_url(link.url, browser=browser, datadir=datadir, depth=depth-1, site=site, talkative=talkative, pattern=pattern)
                 if downloaded:
                     files.extend(downloaded)
 
@@ -468,6 +468,13 @@ def create_option_parser():
         default=True,
         help=_('When following the links on a page, do not stay on the original site.')
     )
+    parser.add_option(
+        '-e', '--pattern',
+        dest='pattern',
+        type='str',
+        default='',
+        help=_('Specify a pattern to be matched in URL.')
+    )
 
     # Continuation (from previous work) options
     parser.add_option(
@@ -539,6 +546,7 @@ def main():
     n = options.numelements
     q = options.quiet
     u = options.urls
+    e = options.pattern
 
     f = os.sys.stdin
 
@@ -605,7 +613,8 @@ def main():
             outdir=outputdir,
             crawldepth=options.crawldepth,
             siteonly=options.siteonly,
-            talkative=not q
+            talkative=not q,
+            pattern=options.pattern
         )
 
     # Step 4: Convert downloaded pages to text
