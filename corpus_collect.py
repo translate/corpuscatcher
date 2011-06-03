@@ -262,14 +262,18 @@ def crawl_url(url, browser=None, datadir='data', depth=0, site='', talkative=Fal
     if browser is None:
         browser = init_browser()
 
-    files = []
+    files = []    
+    
+    import re
+    p = re.compile(pattern)
+    foundpattern = p.search(url)
 
     fname = os.path.join(datadir, '%s.html' % md5.new(url).hexdigest())
     if os.path.exists(fname):
         # The URL was not previously downloaded
         if talkative:
             print _('\t%s => [Previously downloaded]') % (url)
-    elif url.find(pattern) >= 0 and url_is_text(url):
+    elif foundpattern != None and url_is_text(url):
         html = ''
         try:
             html = filterhtml(browser.open(url).get_data())
@@ -277,7 +281,7 @@ def crawl_url(url, browser=None, datadir='data', depth=0, site='', talkative=Fal
             if talkative:
                 print _('\t%s => ERROR: %s') % (url, exc)
             return None
-
+        
         f = open(fname, 'w')
         f.write('<!-- URL: %s -->\n' % url)
         f.write(html)
