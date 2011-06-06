@@ -262,7 +262,7 @@ def crawl_url(url, browser=None, datadir='data', depth=0, site='', talkative=Fal
     if browser is None:
         browser = init_browser()
 
-    files = []    
+    files = []
     
     import re
     p = re.compile(pattern)
@@ -281,7 +281,7 @@ def crawl_url(url, browser=None, datadir='data', depth=0, site='', talkative=Fal
             if talkative:
                 print _('\t%s => ERROR: %s') % (url, exc)
             return None
-        
+
         f = open(fname, 'w')
         f.write('<!-- URL: %s -->\n' % url)
         f.write(html)
