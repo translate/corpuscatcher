@@ -157,6 +157,15 @@ def create_option_parser():
 
     return parser
 
+def get_file_dict(files): # a list of filenames
+    corpus = []
+    for f in files:
+        fr = open(f, 'r')
+        urlv = fr.readline()[7:-3]
+        count = fr.readline()[9:-3]
+        corpus.append({'filename':f, 'counter':count, 'url': urlv})
+    return corpus
+
 def main():
     options, args = create_option_parser().parse_args()
 
@@ -186,8 +195,10 @@ def main():
     goodwords = options.goodfile and set([w.lower() for w in open(options.goodfile).read().split()]) or set()
     allwords  = []
 
-    for f in files:
-        allwords.extend( process_file(open(f), remove_bad=options.removebad, output_list=options.list) )
+    dictfiles = get_file_dict(files)
+    dictfiles.sort(key=lambda d: d['filename'])
+    for f in dictfiles:
+        allwords.extend( process_file(open(f['filename']), remove_bad=options.removebad, output_list=options.list) )
 
     if options.list:
         allwords = list(set(allwords))
