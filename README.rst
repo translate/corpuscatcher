@@ -21,15 +21,15 @@
 
    It was written in Python and can therefore easily be used, in part or in
    whole, in other Python projects. It was originally written to simplify the
-   use of BootCaT (<http://clic.cimec.unitn.it/marco/tools_and_resources.html>),
+   use of BootCaT <http://clic.cimec.unitn.it/marco/tools_and_resources.html>,
    but has grown to replace the used BootCaT parts with Python ports.
 
    If you are interested in CorpusCatcher, or working on spell checkers, you may
-   be interested in Spelt (<http://translate.sourceforge.net/wiki/spelt/index>).
+   be interested in Spelt <http://translate.sourceforge.net/wiki/spelt/index>.
 
 2. DOCUMENTATION
 
-   See the wiki at http://translate.sourceforge.net/wiki/corpuscatcher/index
+   See the wiki at <http://translate.sourceforge.net/wiki/corpuscatcher/index>
    (complete instructions are in the README file there).
 
 3. INSTALLATION
